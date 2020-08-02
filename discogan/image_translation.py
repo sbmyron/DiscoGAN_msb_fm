@@ -95,7 +95,7 @@ def get_gan_loss(dis_real, dis_fake, criterion, cuda):
         labels_dis_real = labels_dis_real.cuda()
         labels_dis_fake = labels_dis_fake.cuda()
         labels_gen = labels_gen.cuda()
-
+ 
     dis_loss = criterion( dis_real, labels_dis_real ) * 0.5 + criterion( dis_fake, labels_dis_fake ) * 0.5
     gen_loss = criterion( dis_fake, labels_gen )
 
@@ -228,10 +228,13 @@ def main():
             AB = generator_B(A)
             BA = generator_A(B)
 
+            print('from:', A.shape, 'to', AB.shape, )
+
             ABA = generator_A(AB)
             BAB = generator_B(BA)
 
-            # Reconstruction Loss
+            # Reconstruction Loss 
+            print(ABA.shape, A.shape)
             recon_loss_A = recon_criterion( ABA, A )
             recon_loss_B = recon_criterion( BAB, B )
 
