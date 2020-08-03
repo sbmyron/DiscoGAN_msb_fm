@@ -134,7 +134,7 @@ def get_edge2photo_files(item='edges2handbags', test=False):
 
 
 
-def get_music_files(item='piano2violin', test=False, n_test=200): #msb 
+def get_music_files(item='piano2violin', test=False, n_test=30): #msb 
     if item != 'piano2violin':
         print('ERROR! (in get_music_files function') 
     item_path = music_path

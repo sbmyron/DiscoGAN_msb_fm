@@ -34,7 +34,7 @@ parser.add_argument('--n_test', type=int, default=200, help='Number of test data
 
 parser.add_argument('--update_interval', type=int, default=3, help='')
 parser.add_argument('--log_interval', type=int, default=50, help='Print loss values every log_interval iterations.')
-parser.add_argument('--image_save_interval', type=int, default=1000, help='Save test results every image_save_interval iterations.')
+parser.add_argument('--image_save_interval', type=int, default=10, help='Save test results every image_save_interval iterations.')
 parser.add_argument('--model_save_interval', type=int, default=10000, help='Save models every model_save_interval iterations.')
 
 def as_np(data):
@@ -228,13 +228,13 @@ def main():
             AB = generator_B(A)
             BA = generator_A(B)
 
-            print('from:', A.shape, 'to', AB.shape, )
+            #print('from:', A.shape, 'to', AB.shape, )
 
             ABA = generator_A(AB)
             BAB = generator_B(BA)
 
             # Reconstruction Loss 
-            print(ABA.shape, A.shape)
+            #print(ABA.shape, A.shape)
             recon_loss_A = recon_criterion( ABA, A )
             recon_loss_B = recon_criterion( BAB, B )
 
@@ -310,12 +310,12 @@ def main():
                     BAB_val = BAB[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
 
                     filename_prefix = os.path.join (subdir_path, str(im_idx))
-                    scipy.misc.imsave( filename_prefix + '.A.jpg', A_val.astype(np.uint8)[:,:,::-1])
-                    scipy.misc.imsave( filename_prefix + '.B.jpg', B_val.astype(np.uint8)[:,:,::-1])
-                    scipy.misc.imsave( filename_prefix + '.BA.jpg', BA_val.astype(np.uint8)[:,:,::-1])
-                    scipy.misc.imsave( filename_prefix + '.AB.jpg', AB_val.astype(np.uint8)[:,:,::-1])
-                    scipy.misc.imsave( filename_prefix + '.ABA.jpg', ABA_val.astype(np.uint8)[:,:,::-1])
-                    scipy.misc.imsave( filename_prefix + '.BAB.jpg', BAB_val.astype(np.uint8)[:,:,::-1])
+                    scipy.misc.imsave( filename_prefix + '.A.png', A_val.astype(np.uint8)[:,:,::-1])
+                    scipy.misc.imsave( filename_prefix + '.B.png', B_val.astype(np.uint8)[:,:,::-1])
+                    scipy.misc.imsave( filename_prefix + '.BA.png', BA_val.astype(np.uint8)[:,:,::-1])
+                    scipy.misc.imsave( filename_prefix + '.AB.png', AB_val.astype(np.uint8)[:,:,::-1])
+                    scipy.misc.imsave( filename_prefix + '.ABA.png', ABA_val.astype(np.uint8)[:,:,::-1])
+                    scipy.misc.imsave( filename_prefix + '.BAB.png', BAB_val.astype(np.uint8)[:,:,::-1])
 
             if iters % args.model_save_interval == 0:
                 torch.save( generator_A, os.path.join(model_path, 'model_gen_A-' + str( iters / args.model_save_interval )))
