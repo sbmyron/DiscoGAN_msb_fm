@@ -34,7 +34,7 @@ parser.add_argument('--n_test', type=int, default=200, help='Number of test data
 
 parser.add_argument('--update_interval', type=int, default=3, help='')
 parser.add_argument('--log_interval', type=int, default=50, help='Print loss values every log_interval iterations.')
-parser.add_argument('--image_save_interval', type=int, default=10, help='Save test results every image_save_interval iterations.')
+parser.add_argument('--image_save_interval', type=int, default=1000, help='Save test results every image_save_interval iterations.')
 parser.add_argument('--model_save_interval', type=int, default=10000, help='Save models every model_save_interval iterations.')
 
 def as_np(data):
