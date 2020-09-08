@@ -1,3 +1,6 @@
+#Author Myron Sampsakis-Bakopoulos M.Sc.
+#August 2020
+
 from additionals import *
 import numpy as np
 import librosa.core as lc
@@ -12,11 +15,11 @@ import time
 path_soundfiles = "./audiofiles"
 path_dataset    = "./imagefiles"
 recon_files     = "./reconstructed"
-_n_fft = 310 #693 #310 #
+_n_fft = 310 #310 or 693 for 1 or 5 sec accordingly
 print(str(_n_fft))
 _hop_length = int(_n_fft/4)
 sr = 12000
-duration = 1 #5 #seconds of each audio segment
+duration = 1 #1 or 5 #seconds of each audio segment
 rescale = True
 
 

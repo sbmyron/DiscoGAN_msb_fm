@@ -1,3 +1,6 @@
+#Author Myron Sampsakis-Bakopoulos M.Sc.
+#August 2020
+
 import numpy as np
 import math
 import scipy
@@ -17,18 +20,12 @@ def cdf_gauss(array):
     _array = np.zeros((array.shape[0],array.shape[1])).astype(float)
     mean = 0
     import math
-    std_avg = np.std(array)
-    #print('Average std:', std_avg)
-    std_array = (array-mean)/std_avg
-    #print(std_array)
+    std_avg = np.std(array) 
+    std_array = (array-mean)/std_avg 
     for i in range(array.shape[0]):
         for j in range(array.shape[1]):
-            _array[i, j] = gaussian_CDF(array[i, j], mean, std_avg)
-            #print(_array[i, j])
-            std_array[i, j] = std_avg
-            #print(i, j, array[i,j])
-    #print(std_array)
-    #print('Mean array value:', np.mean(_array))
+            _array[i, j] = gaussian_CDF(array[i, j], mean, std_avg) 
+            std_array[i, j] = std_avg 
     return (_array, std_avg )
 
 def reconstruct_arrays(scaled, std_avg):
@@ -43,8 +40,7 @@ def reconstruct_arrays(scaled, std_avg):
     return _array
 
 
-def gaussian_CDF(x, mean, std):
-    #return 0.5*(1+math.erf((x-mean)/(std*np.sqrt(2))))
+def gaussian_CDF(x, mean, std): 
     if x<=0:
         return 0.5*np.exp(x/std)
     else:
@@ -54,9 +50,7 @@ def gaussian_CDF(x, mean, std):
 def inv_gaussian_CDF(x, mean, std):
     if x>0.99: x = 0.99
     if x<0.01: x = 0.01
-    inverf = scipy.special.erfinv(2*x-1)
-    #if inverf > 100:
-    #    print('MASSIVE INVERF:', inverf,'from:', x)
+    inverf = scipy.special.erfinv(2*x-1) 
     return inverf * std *np.sqrt(2) + mean
 
 

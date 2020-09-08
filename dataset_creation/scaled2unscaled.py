@@ -1,3 +1,6 @@
+#Author Myron Sampsakis-Bakopoulos M.Sc.
+#August 2020
+
 from additionals import *
 import numpy as np
 import librosa.core as lc
