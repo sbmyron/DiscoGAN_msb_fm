@@ -28,6 +28,26 @@ def shuffle_data(da, db):
     shuffled_da = np.array(da)[ np.array(a_idx) ]
     shuffled_db = np.array(db)[ np.array(b_idx) ]
 
+    print(shuffled_da)
+    return shuffled_da, shuffled_db
+
+def shuffle_data_5(da, db):
+    a_idx = range(len(da)) 
+    a_idx = (a_idx[-1]//5)*5 
+    arr = np.arange(a_idx).reshape((-1,5))  
+    arr = np.random.permutation(arr) 
+    a_idx = arr.reshape((1,-1)).tolist()[0]  
+
+    b_idx = range(len(db))
+    b_idx = (b_idx[-1]//5)*5 
+    arr = np.arange(b_idx).reshape((-1,5))  
+    arr = np.random.permutation(arr)  
+    b_idx = arr.reshape((1,-1)).tolist()[0]
+    
+    shuffled_da = np.array(da)[ np.array(a_idx) ]
+    shuffled_db = np.array(db)[ np.array(b_idx) ]
+
+    print(shuffled_da)
     return shuffled_da, shuffled_db
 
 def read_images( filenames, domain=None, image_size=64):
@@ -52,11 +72,14 @@ def read_images( filenames, domain=None, image_size=64):
         image = image.transpose(2,0,1)
         images.append( image )
 
+        
     images = np.stack( images )
     return images
 
 def read_images_msb( filenames, domain=None, image_size=64):
 
+
+    #print(filenames) 
     images = []
     for fn in filenames: 
         image = cv2.imread(fn)
@@ -67,8 +90,12 @@ def read_images_msb( filenames, domain=None, image_size=64):
         image = image.astype(np.float32) / 255.
         image = image.transpose(2,0,1)
         images.append( image )
-
-    images = np.stack( images )
+    #print(len(images))
+    #print('Length ^')
+    #if len(images) != 5:
+    #    print(len(filenames), len(images), filenames, images)
+ 
+    images = np.stack( images ) 
     return images
 
 def read_attr_file( attr_path, image_dir ):
@@ -134,15 +161,21 @@ def get_edge2photo_files(item='edges2handbags', test=False):
 
 
 
-def get_music_files(item='piano2violin', test=False, n_test=30): #msb 
+def get_music_files(item='piano2violin', test=False, n_test=15): #msb 
     if item != 'piano2violin':
         print('ERROR! (in get_music_files function') 
     item_path = music_path
    
     image_paths = map(lambda x: os.path.join( item_path, x ), os.listdir( item_path )) 
 
-    type_a_images = os.listdir(image_paths[0])    #type A
-    type_b_images = os.listdir(image_paths[1])    #type A 
+    type_a_images = os.listdir(image_paths[0])   #type A
+    type_b_images = os.listdir(image_paths[1])   #type 
+    
+    print('Sorting images...')
+    type_a_images.sort()
+    type_b_images.sort()
+    print('Sorting done!')
+
 
 
     for i, file in enumerate(type_a_images):

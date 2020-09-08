@@ -19,7 +19,11 @@ class Discriminator(nn.Module):
             ):
 
         super(Discriminator, self).__init__()
+        self.conv0 = nn.Conv2d(3, 3, (5,5), (1,5), (2,0), bias=False)
+        self.relu0 = nn.LeakyReLU(0.2, inplace=True)
+
         self.conv1 = nn.Conv2d(3, 64, 4, 2, 1, bias=False)
+        self.bn1 = nn.BatchNorm2d(64 )
         self.relu1 = nn.LeakyReLU(0.2, inplace=True)
 
         self.conv2 = nn.Conv2d(64, 64 * 2, 4, 2, 0, bias=False)
@@ -42,10 +46,15 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
     	#print('========Input shape:', input.shape)
-        conv1 = self.conv1( input )
-        relu1 = self.relu1( conv1 ) 
+        conv0 = self.conv0( input )
+        relu0 = self.relu0( conv0 )  
+        #print('========conv0 shape:', relu0.shape)		
 
+        conv1 = self.conv1( relu0 )
+        bn1 = self.bn1( conv1 )
+        relu1 = self.relu1( bn1 ) 
     	#print('========conv1 shape:', relu1.shape)
+
         conv2 = self.conv2( relu1 )
         bn2 = self.bn2( conv2 )
         relu2 = self.relu2( bn2 )

@@ -19,26 +19,34 @@ class Discriminator(nn.Module):
             ):
 
         super(Discriminator, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, 4, 2, 1, bias=False)
+        self.conv1 = nn.Conv2d(3, 32, 4, 2, 2, bias=False)
         self.relu1 = nn.LeakyReLU(0.2, inplace=True)
 
-        self.conv2 = nn.Conv2d(64, 64 * 2, 4, 2, 0, bias=False)
-        self.bn2 = nn.BatchNorm2d(64 * 2)
+        self.conv2 = nn.Conv2d(32, 32 * 2, 4, 2, 1, bias=False)
+        self.bn2 = nn.BatchNorm2d(32 * 2)
         self.relu2 = nn.LeakyReLU(0.2, inplace=True)
 
-        self.conv3 = nn.Conv2d(64 * 2, 64 * 4, 4, 2, 0, bias=False)
-        self.bn3 = nn.BatchNorm2d(64 * 4)
+        self.conv3 = nn.Conv2d(32 * 2, 32 * 4, 4, 2, 2, bias=False)
+        self.bn3 = nn.BatchNorm2d(32 * 4)
         self.relu3 = nn.LeakyReLU(0.2, inplace=True)
 
-        self.conv4 = nn.Conv2d(64 * 4, 64 * 8, 4, 2, 1, bias=False)
-        self.bn4 = nn.BatchNorm2d(64 * 8)
-        self.relu4 = nn.LeakyReLU(0.2, inplace=True) 
+        self.conv4 = nn.Conv2d(32 * 4, 32 * 8, 4, 2, 1, bias=False)
+        self.bn4 = nn.BatchNorm2d(32 * 8)
+        self.relu4 = nn.LeakyReLU(0.2, inplace=True)
  
-        self.conv5 = nn.Conv2d(64 * 8, 64 * 16, 3, 3, 0, bias=False)
-        self.bn5 = nn.BatchNorm2d(64 * 16)
+        self.conv5 = nn.Conv2d(32 * 8, 32 * 8, 4, 2, 1, bias=False)
+        self.bn5 = nn.BatchNorm2d(32 * 8)
         self.relu5 = nn.LeakyReLU(0.2, inplace=True)
-   
-        self.conv6 = nn.Conv2d(64 * 16, 1, 3, 3, 0, bias=False)
+ 
+        # self.conv6 = nn.Conv2d(16 * 8, 16 * 8, 4, 1, 0, bias=False)
+        # self.bn6 = nn.BatchNorm2d(16 * 8)
+        # self.relu6 = nn.LeakyReLU(0.2, inplace=True)
+ 
+        # self.conv7 = nn.Conv2d(16 * 8, 16 * 8, 4, 2, 0, bias=False)
+        # self.bn7 = nn.BatchNorm2d(16 * 8)
+        # self.relu7 = nn.LeakyReLU(0.2, inplace=True)
+
+        self.conv8 = nn.Conv2d(32 * 8, 1, 11, 1, 0, bias=False)
 
     def forward(self, input):
     	#print('========Input shape:', input.shape)
@@ -76,10 +84,10 @@ class Discriminator(nn.Module):
      #    relu7 = self.relu7( bn7 )
     	# print('========conv7 shape:', relu7.shape)
 
-        conv6 = self.conv6( relu5 )
+        conv8 = self.conv8( relu5 )
     	#print('========conv8 shape:', conv8.shape)
 
-        return torch.sigmoid( conv6 ), [relu3, relu4, relu5]
+        return torch.sigmoid( conv8 ), [relu3, relu4, relu5]
 
 class Generator(nn.Module):
     def __init__(
@@ -125,46 +133,59 @@ class Generator(nn.Module):
 
         if extra_layers == False:
             self.main = nn.Sequential(
-                nn.Conv2d(3, 64, 4, 2, 1, bias=False),
+                nn.Conv2d(3, 24, 4, 2, 2, bias=False),
+                nn.LeakyReLU(0.2, inplace=True),
+                nn.Conv2d(24, 24 * 2, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(24 * 2),
+                nn.LeakyReLU(0.2, inplace=True),
+                nn.Conv2d(24 * 2, 24 * 4, 4, 2, 2, bias=False),
+                nn.BatchNorm2d(24 * 4),
+                nn.LeakyReLU(0.2, inplace=True),
+                nn.Conv2d(24 * 4, 24 * 8, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(24 * 8),
                 nn.LeakyReLU(0.2, inplace=True),
 
-                nn.Conv2d(64, 64 * 2, 4, 2, 0, bias=False), 
-                nn.BatchNorm2d(64 * 2),
-                nn.LeakyReLU(0.2, inplace=True),
+                #My extra layers
+                nn.Conv2d(24 * 8, 24 * 16, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(24 * 16),
+                nn.LeakyReLU(0.2, inplace=True), 
 
-                nn.Conv2d(64 * 2, 64 * 4, 4, 2, 0, bias=False), 
-                nn.BatchNorm2d(64 * 4),
-                nn.LeakyReLU(0.2, inplace=True),
+                nn.Conv2d(24 * 16, 24 * 32, 4, 2, 2, bias=False),
+                nn.BatchNorm2d(24 * 32),
+                nn.LeakyReLU(0.2, inplace=True), 
 
-                nn.Conv2d(64 * 4, 64 * 8, 4, 2, 1, bias=False), 
-                nn.BatchNorm2d(64 * 8),
-                nn.LeakyReLU(0.2, inplace=True),
+                nn.Conv2d(24 * 32, 24 * 64, 4, 2, 2, bias=False),
+                nn.BatchNorm2d(24 * 64),
+                nn.LeakyReLU(0.2, inplace=True),  
 
-                nn.Conv2d(64 * 8, 64 * 16, 3, 3, 0, bias=False), 
-                nn.BatchNorm2d(64 * 16),
-                nn.LeakyReLU(0.2, inplace=True),
-   
-                # # batch x 64*8 x 3 x 3	
+                # # batch x 1024 x 4 x 4	
                 # #Perhaps add a 1x1x1000 vector??
 
-                nn.ConvTranspose2d(64 * 16, 64 * 8, 3, 3, 0, bias=False),
-                nn.BatchNorm2d(64 * 8),
+                nn.ConvTranspose2d(24 * 64, 24 * 32, 3, 1, 0, bias=False),
+                nn.BatchNorm2d(24 * 32),
                 nn.ReLU(True), 
-                #batch x 64*4 x 9 x 9
-                nn.ConvTranspose2d(64 * 8, 64 * 4, 4, 2, 0, bias=False),
-                nn.BatchNorm2d(64 * 4),
+                #batch x 512 x 6 x 6  
+                nn.ConvTranspose2d(24 * 32, 24 * 16, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(24 * 16),
                 nn.ReLU(True), 
-                #batch x 64*2 x 20 x 20
-                nn.ConvTranspose2d(64 * 4,  64 * 2 , 4, 2, 2, output_padding = 1, bias=False),
-                nn.BatchNorm2d(64 * 2),
-                nn.ReLU(True), 
-                #batch x 64 x 39 x 39 
-                nn.ConvTranspose2d(64 * 2,  64  , 4, 2, 1, bias=False),
-                nn.BatchNorm2d(64),
-                nn.ReLU(True), 
-                #batch x 64 x 78 * 78
-                nn.ConvTranspose2d(64, 3, 4, 2, 1, bias=False),
-                #batch x 64 x 156 * 156
+                #batch x 256 x 12 x 12
+                nn.ConvTranspose2d(24 * 16,  24 * 8, 4, 2, 2, bias=False),
+                nn.BatchNorm2d(24 * 8),
+                nn.ReLU(True),
+                #batch x 128 x 22 x 22
+                nn.ConvTranspose2d(24 * 8,   24 * 4, 4, 2, 1, bias=False),
+                nn.BatchNorm2d(24 * 4),
+                nn.ReLU(True),
+                #batch x 64 x 44 x 44
+                nn.ConvTranspose2d(24 * 4,   24 * 2, 3, 2, 1, bias=False),
+                nn.BatchNorm2d(24 * 2),
+                nn.ReLU(True),
+                #batch x 32 x 87 x 87
+                nn.ConvTranspose2d(24 * 2,   24    , 4, 2, 1, bias=False),
+                nn.BatchNorm2d(24),
+                nn.ReLU(True),
+                #batch x 16 x 174 x 174
+                nn.ConvTranspose2d(24    ,   3     , 3, 2, 1, bias=False),
                 nn.Sigmoid()
             )
 

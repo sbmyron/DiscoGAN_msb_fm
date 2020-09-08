@@ -7,9 +7,10 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
 from dataset import *
-from model import *
+from model_5n1 import *
 import scipy
 from progressbar import ETA, Bar, Percentage, ProgressBar
+import numpy as np 
 
 parser = argparse.ArgumentParser(description='PyTorch implementation of DiscoGAN')
 parser.add_argument('--cuda', type=str, default='true', help='Set cuda usage')
@@ -17,7 +18,7 @@ parser.add_argument('--task_name', type=str, default='facescrub', help='Set data
 parser.add_argument('--epoch_size', type=int, default=5000, help='Set epoch size')
 parser.add_argument('--batch_size', type=int, default=64, help='Set batch size')
 parser.add_argument('--learning_rate', type=float, default=0.0002, help='Set learning rate for optimizer')
-parser.add_argument('--result_path', type=str, default='./results/', help='Set the path the result images will be saved.')
+parser.add_argument('--result_path', type=str, default='./results_5n1/', help='Set the path the result images will be saved.')
 parser.add_argument('--model_path', type=str, default='./models/', help='Set the path for trained models')
 parser.add_argument('--model_arch', type=str, default='discogan', help='choose among gan/recongan/discogan. gan - standard GAN, recongan - GAN with reconstruction, discogan - DiscoGAN.')
 parser.add_argument('--image_size', type=int, default=64, help='Image size. 64 for every experiment in the paper')
@@ -34,8 +35,8 @@ parser.add_argument('--n_test', type=int, default=200, help='Number of test data
 
 parser.add_argument('--update_interval', type=int, default=3, help='')
 parser.add_argument('--log_interval', type=int, default=50, help='Print loss values every log_interval iterations.')
-parser.add_argument('--image_save_interval', type=int, default=100, help='Save test results every image_save_interval iterations.')
-parser.add_argument('--model_save_interval', type=int, default=1000, help='Save models every model_save_interval iterations.')
+parser.add_argument('--image_save_interval', type=int, default=300, help='Save test results every image_save_interval iterations.')
+parser.add_argument('--model_save_interval', type=int, default=5000, help='Save models every model_save_interval iterations.')
 
 def as_np(data):
     return data.cpu().data.numpy()
@@ -156,7 +157,7 @@ def main():
         os.makedirs(model_path)
 
 
-    load_pretrained = True 
+    load_pretrained = False #True      
 
     if not load_pretrained:
         generator_A = Generator()
@@ -171,7 +172,7 @@ def main():
             _gen_A = [i for i in saved_models if model_type in i] 
             best_mod_A = -1
             for it, model in enumerate(_gen_A):  
-                if int(model.split('-')[1]) >= best_mod_A: 
+                if int(model.split('-')[1]) > best_mod_A: 
                     best_mod_A = int(model.split('-')[1])
                     gen_A = model  
             print(best_mod_A)
@@ -215,7 +216,7 @@ def main():
     dis_loss_total = []
 
     for epoch in range(epoch_size):
-        data_style_A, data_style_B = shuffle_data( data_style_A, data_style_B)
+        data_style_A, data_style_B = shuffle_data_5( data_style_A, data_style_B)
 
         widgets = ['epoch #%d|' % epoch, Percentage(), Bar(), ETA()]
         pbar = ProgressBar(maxval=n_batches, widgets=widgets)
@@ -225,20 +226,28 @@ def main():
 
             pbar.update(i)
 
-            generator_A.zero_grad()
-            generator_B.zero_grad()
-            discriminator_A.zero_grad()
-            discriminator_B.zero_grad()
+            #generator_A.zero_grad()
+            #generator_B.zero_grad()
+            #discriminator_A.zero_grad()
+            #discriminator_B.zero_grad()
+
+            #print('batch size:', batch_size)
 
             A_path = data_style_A[ i * batch_size: (i+1) * batch_size ]
             B_path = data_style_B[ i * batch_size: (i+1) * batch_size ]
+            #print(len(A_path))
+            #print(len(B_path))
+
 
             if args.task_name.startswith( 'edges2' ):
                 A = read_images( A_path, 'A', args.image_size )
                 B = read_images( B_path, 'B', args.image_size )
             elif args.task_name == 'piano2violin':  #msb 
-            	A = read_images_msb( A_path, 'A', args.image_size)
-            	B = read_images_msb( B_path, 'B', args.image_size)
+                if len(A_path) != 0 and len(B_path) != 0:
+            	   A = read_images_msb( A_path, 'A', args.image_size)
+            	   B = read_images_msb( B_path, 'B', args.image_size)
+                else:
+                    break 
             elif args.task_name =='handbags2shoes' or args.task_name == 'shoes2handbags':
                 A = read_images( A_path, 'B', args.image_size )
                 B = read_images( B_path, 'B', args.image_size )
@@ -246,56 +255,104 @@ def main():
                 A = read_images( A_path, None, args.image_size )
                 B = read_images( B_path, None, args.image_size )
 
+
+
             A = Variable( torch.FloatTensor( A ) )
-            B = Variable( torch.FloatTensor( B ) )
+            B = Variable( torch.FloatTensor( B ) )   
+
+
+            def stack2size(A):
+                for i in range(0, A.shape[0], 5):
+                    if i == 0:
+                        A_ret = torch.cat((A[i,:,:,:],A[i+1,:,:,:],A[i+2,:,:,:],A[i+3,:,:,:],A[i+4,:,:,:]), dim=2)
+                        A_ret = A_ret[None,:,:]
+                    else:
+                        A_ret = torch.cat( (A_ret, torch.cat( (A[i,:,:,:],A[i+1,:,:,:],A[i+2,:,:,:],A[i+3,:,:,:],A[i+4,:,:,:]), dim=2)[None,:,:] ), dim=0)
+                return A_ret 
+
+
+
+            A5 = stack2size(A) #torch.cat((A[0,:,:,:],A[1,:,:,:],A[2,:,:,:],A[3,:,:,:],A[4,:,:,:]), dim=2)
+            B5 = stack2size(B) #torch.cat((B[0,:,:,:],B[1,:,:,:],B[2,:,:,:],B[3,:,:,:],B[4,:,:,:]), dim=2)
+            #A5 = A5[None,:,:]
+            #B5 = B5[None,:,:]
+            #print('A5:', A5.shape)
+            #print('B5:', B5.shape)
+
+
 
             if cuda:
                 A = A.cuda()
                 B = B.cuda()
+                A5 = A5.cuda()
+                B5 = B5.cuda()
 
-            '''
-            print('In:') 
-            print(torch.min(A))
-            print(torch.max(A))  
-
-            print(torch.min(B))
-            print(torch.max(B))
-            '''
             AB = generator_B(A)
             BA = generator_A(B)
+            #AB5 = torch.reshape(AB,(1,3,156*5,156))
+            AB5 = stack2size(AB) #torch.cat((AB[0,:,:,:],AB[1,:,:,:],AB[2,:,:,:],AB[3,:,:,:],AB[4,:,:,:]), dim=2)
+            BA5 = stack2size(BA) #torch.cat((BA[0,:,:,:],BA[1,:,:,:],BA[2,:,:,:],BA[3,:,:,:],BA[4,:,:,:]), dim=2)
+            #AB5 = AB5[None,:,:]
+            #BA5 = BA5[None,:,:]
+            #print('AB5:', AB5.shape)
+            #print('BA5:', BA5.shape)
 
-            '''
-            print('Mid:') 
-            print(torch.min(AB))
-            print(torch.max(AB))  
-
-            print(torch.min(BA))
-            print(torch.max(BA))
-            '''
             #print('from:', A.shape, 'to', AB.shape, )
-            #print('Out:')
+
             ABA = generator_A(AB)
-            #print(torch.min(ABA))
-            #print(torch.max(ABA))
             BAB = generator_B(BA)
-            #print(torch.min(BAB))
-            #print(torch.max(BAB))
 
-            # Reconstruction Loss 
-            #print(ABA.shape, A.shape)
-            recon_loss_A = recon_criterion( ABA, A )
-            recon_loss_B = recon_criterion( BAB, B )
 
-            # Real/Fake GAN Loss (A)
-            A_dis_real, A_feats_real = discriminator_A( A )
-            A_dis_fake, A_feats_fake = discriminator_A( BA )
+            #print('ABA:',ABA.shape)
+            ABA5 = stack2size(ABA) #torch.cat((ABA[0,:,:,:],ABA[1,:,:,:],ABA[2,:,:,:],ABA[3,:,:,:],ABA[4,:,:,:]), dim=2)
+            #print('ABA5:',ABA5.shape)
+            BAB5 = stack2size(BAB) #torch.cat((BAB[0,:,:,:],BAB[1,:,:,:],BAB[2,:,:,:],BAB[3,:,:,:],BAB[4,:,:,:]), dim=2)
+            ABA5 = ABA5[None,:,:]
+            BAB5 = BAB5[None,:,:]
+
+
+            recon_loss_A = recon_criterion( ABA5, A5 )
+            recon_loss_B = recon_criterion( BAB5, B5 )
+            
+
+            # Real/Fake GAN Loss (A) numpy.expand_dims(a, axis)[source]
+            #print('expanded shape:', np.expand_dims(A5, 0).shape)
+            A_dis_real, A_feats_real = discriminator_A( A5 )
+            A_dis_fake, A_feats_fake = discriminator_A( BA5 )
+
+            #A5_dis_real, A5_feats_real = discriminator_A( A5 )
+            #A5_dis_fake, A5_feats_fake = discriminator_A( BA5 )
+            #print('A losses')
+            #print(A_dis_real, A_dis_fake, A5_dis_real, A5_dis_fake)
 
             dis_loss_A, gen_loss_A = get_gan_loss( A_dis_real, A_dis_fake, gan_criterion, cuda )
             fm_loss_A = get_fm_loss(A_feats_real, A_feats_fake, feat_criterion)
 
             # Real/Fake GAN Loss (B)
-            B_dis_real, B_feats_real = discriminator_B( B )
-            B_dis_fake, B_feats_fake = discriminator_B( AB )
+            B_dis_real, B_feats_real = discriminator_B( B5 )
+            B_dis_fake, B_feats_fake = discriminator_B( AB5 )
+  
+            '''
+            A5_cpu = np.moveaxis(np.squeeze(A5.cpu().detach().numpy(),axis=0), 0,2)  
+            scipy.misc.imsave('A5.png', A5_cpu) 
+            AB5_cpu = np.moveaxis(np.squeeze(AB5.cpu().detach().numpy(),axis=0), 0,2)  
+            scipy.misc.imsave('AB5.png', AB5_cpu)  
+            B5_cpu = np.moveaxis(np.squeeze(B5.cpu().detach().numpy(),axis=0), 0,2)  
+            scipy.misc.imsave('B5.png', B5_cpu) 
+            BA5_cpu = np.moveaxis(np.squeeze(BA5.cpu().detach().numpy(),axis=0), 0,2)  
+            scipy.misc.imsave('BA5.png', BA5_cpu)
+            '''
+
+
+
+            #B5_dis_real, B5_feats_real = discriminator_B( B )
+            #B5_dis_fake, B5_feats_fake = discriminator_B( AB )
+
+            #print('B losses')
+            #print(B5.shape, AB5.shape)
+            #print(B_dis_real) 
+            #print(B5_dis_real) 
+            #exit()
 
             dis_loss_B, gen_loss_B = get_gan_loss( B_dis_real, B_dis_fake, gan_criterion, cuda )
             fm_loss_B = get_fm_loss( B_feats_real, B_feats_fake, feat_criterion )
@@ -349,13 +406,32 @@ def main():
                 else:
                     os.makedirs( subdir_path )
 
-                for im_idx in range( n_testset ):
+
+                def cat_arrays(test_A, im_idx):
+                    A_val = np.concatenate((test_A[im_idx].cpu().data.numpy().transpose(1,2,0) * 255.,
+                        test_A[im_idx+1].cpu().data.numpy().transpose(1,2,0) * 255.,
+                        test_A[im_idx+2].cpu().data.numpy().transpose(1,2,0) * 255.,
+                        test_A[im_idx+3].cpu().data.numpy().transpose(1,2,0) * 255.,
+                        test_A[im_idx+4].cpu().data.numpy().transpose(1,2,0) * 255.), axis=1) 
+                    return A_val  
+
+
+                for im_idx in range( n_testset )[0::5]:
+                    '''
                     A_val = test_A[im_idx].cpu().data.numpy().transpose(1,2,0) * 255.
                     B_val = test_B[im_idx].cpu().data.numpy().transpose(1,2,0) * 255.
                     BA_val = BA[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
                     ABA_val = ABA[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
                     AB_val = AB[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
                     BAB_val = BAB[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
+                    '''
+                    A_val = cat_arrays(test_A,im_idx)
+                    B_val = cat_arrays(test_B,im_idx)
+                    BA_val = cat_arrays(BA,im_idx)
+                    ABA_val = cat_arrays(ABA,im_idx)
+                    AB_val = cat_arrays(AB,im_idx)
+                    BAB_val = cat_arrays(BAB,im_idx)
+                    
 
                     filename_prefix = os.path.join (subdir_path, str(im_idx))
                     scipy.misc.imsave( filename_prefix + '.A.png', A_val.astype(np.uint8)[:,:,::-1])
@@ -364,6 +440,7 @@ def main():
                     scipy.misc.imsave( filename_prefix + '.AB.png', AB_val.astype(np.uint8)[:,:,::-1])
                     scipy.misc.imsave( filename_prefix + '.ABA.png', ABA_val.astype(np.uint8)[:,:,::-1])
                     scipy.misc.imsave( filename_prefix + '.BAB.png', BAB_val.astype(np.uint8)[:,:,::-1])
+                    
 
             if iters % args.model_save_interval == 0:
                 torch.save( generator_A, os.path.join(model_path, 'model_gen_A-' + str( iters / args.model_save_interval )))
