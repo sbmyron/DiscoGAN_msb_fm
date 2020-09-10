@@ -2,7 +2,9 @@
 DiscoGAN, but with sound
 
 Authors:
+
 Myron Sampsakis-Bakopoulos, Mechanical Engineer, M.Sc.
+
 Filippos Markolefas, Electrical Engineer, M.Sc.
 
 
