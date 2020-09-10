@@ -78,8 +78,7 @@ def read_images( filenames, domain=None, image_size=64):
 
 def read_images_msb( filenames, domain=None, image_size=64):
 
-
-    #print(filenames) 
+ 
     images = []
     for fn in filenames: 
         image = cv2.imread(fn)
@@ -89,11 +88,7 @@ def read_images_msb( filenames, domain=None, image_size=64):
         image = cv2.resize(image, (image_size,image_size))
         image = image.astype(np.float32) / 255.
         image = image.transpose(2,0,1)
-        images.append( image )
-    #print(len(images))
-    #print('Length ^')
-    #if len(images) != 5:
-    #    print(len(filenames), len(images), filenames, images)
+        images.append( image ) 
  
     images = np.stack( images ) 
     return images

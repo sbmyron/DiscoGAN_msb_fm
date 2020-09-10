@@ -1,0 +1,1 @@
+Copy this folder in the original DiscoGAN repo (https://github.com/SKTBrain/DiscoGAN), and run it from there.

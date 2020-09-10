@@ -37,14 +37,7 @@ class Discriminator(nn.Module):
         self.conv5 = nn.Conv2d(32 * 8, 32 * 8, 4, 2, 1, bias=False)
         self.bn5 = nn.BatchNorm2d(32 * 8)
         self.relu5 = nn.LeakyReLU(0.2, inplace=True)
- 
-        # self.conv6 = nn.Conv2d(16 * 8, 16 * 8, 4, 1, 0, bias=False)
-        # self.bn6 = nn.BatchNorm2d(16 * 8)
-        # self.relu6 = nn.LeakyReLU(0.2, inplace=True)
- 
-        # self.conv7 = nn.Conv2d(16 * 8, 16 * 8, 4, 2, 0, bias=False)
-        # self.bn7 = nn.BatchNorm2d(16 * 8)
-        # self.relu7 = nn.LeakyReLU(0.2, inplace=True)
+  
 
         self.conv8 = nn.Conv2d(32 * 8, 1, 11, 1, 0, bias=False)
 
@@ -73,17 +66,7 @@ class Discriminator(nn.Module):
         bn5 = self.bn5( conv5 )
         relu5 = self.relu5( bn5 )
     	#print('========conv5 shape:', relu5.shape)
- 
-     #    conv6 = self.conv6( relu5 )
-     #    bn6 = self.bn6( conv6 )
-     #    relu6 = self.relu6( bn6 )
-    	# print('========conv6 shape:', relu6.shape)
- 
-     #    conv7 = self.conv7( relu6 )
-     #    bn7 = self.bn7( conv7 )
-     #    relu7 = self.relu7( bn7 )
-    	# print('========conv7 shape:', relu7.shape)
-
+  
         conv8 = self.conv8( relu5 )
     	#print('========conv8 shape:', conv8.shape)
 

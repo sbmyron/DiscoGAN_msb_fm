@@ -65,16 +65,7 @@ class Discriminator(nn.Module):
         bn5 = self.bn5( conv5 )
         relu5 = self.relu5( bn5 )
     	#print('========conv5 shape:', relu5.shape)
- 
-     #    conv6 = self.conv6( relu5 )
-     #    bn6 = self.bn6( conv6 )
-     #    relu6 = self.relu6( bn6 )
-    	# print('========conv6 shape:', relu6.shape)
- 
-     #    conv7 = self.conv7( relu6 )
-     #    bn7 = self.bn7( conv7 )
-     #    relu7 = self.relu7( bn7 )
-    	# print('========conv7 shape:', relu7.shape)
+  
 
         conv6 = self.conv6( relu5 )
     	#print('========conv8 shape:', conv8.shape)

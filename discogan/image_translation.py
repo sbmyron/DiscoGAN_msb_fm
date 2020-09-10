@@ -252,37 +252,13 @@ def main():
             if cuda:
                 A = A.cuda()
                 B = B.cuda()
-
-            '''
-            print('In:') 
-            print(torch.min(A))
-            print(torch.max(A))  
-
-            print(torch.min(B))
-            print(torch.max(B))
-            '''
+ 
             AB = generator_B(A)
             BA = generator_A(B)
-
-            '''
-            print('Mid:') 
-            print(torch.min(AB))
-            print(torch.max(AB))  
-
-            print(torch.min(BA))
-            print(torch.max(BA))
-            '''
-            #print('from:', A.shape, 'to', AB.shape, )
-            #print('Out:')
-            ABA = generator_A(AB)
-            #print(torch.min(ABA))
-            #print(torch.max(ABA))
-            BAB = generator_B(BA)
-            #print(torch.min(BAB))
-            #print(torch.max(BAB))
-
-            # Reconstruction Loss 
-            #print(ABA.shape, A.shape)
+ 
+            ABA = generator_A(AB) 
+            BAB = generator_B(BA) 
+            
             recon_loss_A = recon_criterion( ABA, A )
             recon_loss_B = recon_criterion( BAB, B )
 

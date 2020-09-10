@@ -225,18 +225,10 @@ def main():
         for i in range(n_batches):
 
             pbar.update(i)
-
-            #generator_A.zero_grad()
-            #generator_B.zero_grad()
-            #discriminator_A.zero_grad()
-            #discriminator_B.zero_grad()
-
-            #print('batch size:', batch_size)
+ 
 
             A_path = data_style_A[ i * batch_size: (i+1) * batch_size ]
-            B_path = data_style_B[ i * batch_size: (i+1) * batch_size ]
-            #print(len(A_path))
-            #print(len(B_path))
+            B_path = data_style_B[ i * batch_size: (i+1) * batch_size ] 
 
 
             if args.task_name.startswith( 'edges2' ):
@@ -272,14 +264,8 @@ def main():
 
 
 
-            A5 = stack2size(A) #torch.cat((A[0,:,:,:],A[1,:,:,:],A[2,:,:,:],A[3,:,:,:],A[4,:,:,:]), dim=2)
-            B5 = stack2size(B) #torch.cat((B[0,:,:,:],B[1,:,:,:],B[2,:,:,:],B[3,:,:,:],B[4,:,:,:]), dim=2)
-            #A5 = A5[None,:,:]
-            #B5 = B5[None,:,:]
-            #print('A5:', A5.shape)
-            #print('B5:', B5.shape)
-
-
+            A5 = stack2size(A) 
+            B5 = stack2size(B) 
 
             if cuda:
                 A = A.cuda()
@@ -288,25 +274,18 @@ def main():
                 B5 = B5.cuda()
 
             AB = generator_B(A)
-            BA = generator_A(B)
-            #AB5 = torch.reshape(AB,(1,3,156*5,156))
-            AB5 = stack2size(AB) #torch.cat((AB[0,:,:,:],AB[1,:,:,:],AB[2,:,:,:],AB[3,:,:,:],AB[4,:,:,:]), dim=2)
-            BA5 = stack2size(BA) #torch.cat((BA[0,:,:,:],BA[1,:,:,:],BA[2,:,:,:],BA[3,:,:,:],BA[4,:,:,:]), dim=2)
-            #AB5 = AB5[None,:,:]
-            #BA5 = BA5[None,:,:]
-            #print('AB5:', AB5.shape)
-            #print('BA5:', BA5.shape)
+            BA = generator_A(B) 
 
-            #print('from:', A.shape, 'to', AB.shape, )
+            AB5 = stack2size(AB)  
+            BA5 = stack2size(BA)  
+
 
             ABA = generator_A(AB)
             BAB = generator_B(BA)
+ 
+            ABA5 = stack2size(ABA)  
+            BAB5 = stack2size(BAB)
 
-
-            #print('ABA:',ABA.shape)
-            ABA5 = stack2size(ABA) #torch.cat((ABA[0,:,:,:],ABA[1,:,:,:],ABA[2,:,:,:],ABA[3,:,:,:],ABA[4,:,:,:]), dim=2)
-            #print('ABA5:',ABA5.shape)
-            BAB5 = stack2size(BAB) #torch.cat((BAB[0,:,:,:],BAB[1,:,:,:],BAB[2,:,:,:],BAB[3,:,:,:],BAB[4,:,:,:]), dim=2)
             ABA5 = ABA5[None,:,:]
             BAB5 = BAB5[None,:,:]
 
@@ -315,15 +294,10 @@ def main():
             recon_loss_B = recon_criterion( BAB5, B5 )
             
 
-            # Real/Fake GAN Loss (A) numpy.expand_dims(a, axis)[source]
-            #print('expanded shape:', np.expand_dims(A5, 0).shape)
+            # Real/Fake GAN Loss (A) numpy.expand_dims(a, axis)[source] 
             A_dis_real, A_feats_real = discriminator_A( A5 )
             A_dis_fake, A_feats_fake = discriminator_A( BA5 )
-
-            #A5_dis_real, A5_feats_real = discriminator_A( A5 )
-            #A5_dis_fake, A5_feats_fake = discriminator_A( BA5 )
-            #print('A losses')
-            #print(A_dis_real, A_dis_fake, A5_dis_real, A5_dis_fake)
+ 
 
             dis_loss_A, gen_loss_A = get_gan_loss( A_dis_real, A_dis_fake, gan_criterion, cuda )
             fm_loss_A = get_fm_loss(A_feats_real, A_feats_fake, feat_criterion)
@@ -331,28 +305,7 @@ def main():
             # Real/Fake GAN Loss (B)
             B_dis_real, B_feats_real = discriminator_B( B5 )
             B_dis_fake, B_feats_fake = discriminator_B( AB5 )
-  
-            '''
-            A5_cpu = np.moveaxis(np.squeeze(A5.cpu().detach().numpy(),axis=0), 0,2)  
-            scipy.misc.imsave('A5.png', A5_cpu) 
-            AB5_cpu = np.moveaxis(np.squeeze(AB5.cpu().detach().numpy(),axis=0), 0,2)  
-            scipy.misc.imsave('AB5.png', AB5_cpu)  
-            B5_cpu = np.moveaxis(np.squeeze(B5.cpu().detach().numpy(),axis=0), 0,2)  
-            scipy.misc.imsave('B5.png', B5_cpu) 
-            BA5_cpu = np.moveaxis(np.squeeze(BA5.cpu().detach().numpy(),axis=0), 0,2)  
-            scipy.misc.imsave('BA5.png', BA5_cpu)
-            '''
-
-
-
-            #B5_dis_real, B5_feats_real = discriminator_B( B )
-            #B5_dis_fake, B5_feats_fake = discriminator_B( AB )
-
-            #print('B losses')
-            #print(B5.shape, AB5.shape)
-            #print(B_dis_real) 
-            #print(B5_dis_real) 
-            #exit()
+   
 
             dis_loss_B, gen_loss_B = get_gan_loss( B_dis_real, B_dis_fake, gan_criterion, cuda )
             fm_loss_B = get_fm_loss( B_feats_real, B_feats_fake, feat_criterion )
@@ -416,15 +369,7 @@ def main():
                     return A_val  
 
 
-                for im_idx in range( n_testset )[0::5]:
-                    '''
-                    A_val = test_A[im_idx].cpu().data.numpy().transpose(1,2,0) * 255.
-                    B_val = test_B[im_idx].cpu().data.numpy().transpose(1,2,0) * 255.
-                    BA_val = BA[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
-                    ABA_val = ABA[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
-                    AB_val = AB[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
-                    BAB_val = BAB[im_idx].cpu().data.numpy().transpose(1,2,0)* 255.
-                    '''
+                for im_idx in range( n_testset )[0::5]: 
                     A_val = cat_arrays(test_A,im_idx)
                     B_val = cat_arrays(test_B,im_idx)
                     BA_val = cat_arrays(BA,im_idx)
